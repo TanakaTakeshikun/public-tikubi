@@ -38,7 +38,7 @@ app.get("/wait", async (req, res) => {
   if (!roomid) return res.render(__dirname + "/err.ejs", { content: "ルームIDが見つかりません<br>初めからやり直してください" });
   if (io.sockets.adapter.rooms.get(roomid)?.size == 1) room.delete(roomid);
   tmp.add(roomid);
-  res.render(__dirname + "/index.ejs", { content: (req.query?.roomid) ? "ゲームスタート" : `貴方のルームID:${roomid}<br>プレイヤーが接続するまでお待ちください` });
+  res.render(__dirname + "/index.ejs", { content: (req.query?.roomid) ? "相手が回答中" : `貴方のルームID:${roomid}<br>プレイヤーが接続するまでお待ちください` });
 });
 
 io.on('connection', socket => {
