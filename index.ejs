@@ -43,7 +43,7 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script language="javascript" type="text/javascript">
-    const sp = (location.search?.slice(8)) ? 1 : window.prompt("速度をを入力してください(毎秒)", "");
+    const sp = (location.search?.slice(8)) ? 1 : window.prompt("速度を入力してください(毎秒)", "");
     let speed = (!isNaN(sp)) ? Number(sp) : 1;
     const quiz_list = ["ニキビ", "チクビ", "ビキニ"]
     const roomid = location.search?.slice(8) || document.cookie?.slice(7)
@@ -86,7 +86,6 @@
       clearTimeout(timer);
     };
     socket.on('chat message', msg => {
-      clearTimeout(timer);
       if (msg.msg == "connect") {
         document.getElementById("content").innerText = "";
         const result = document.getElementById('result');
@@ -107,11 +106,13 @@
         tmp = msg.msg;
         desabled(false);
       };
+      clearTimeout(timer);
+      const timev =(msg.msg == "connect") ?  (Number(speed)||2) * 1000 + 5000 : (Number(speed)||2) * 1000
       timer = setTimeout(_ => {
         desabled(true);
         socket.emit('chat message', { msg: "timeout", id: roomid });
         document.getElementById("tmp").innerText = "時間切れ負け";
-      }, (msg.msg == "connect") ? Number(speed)||2 * 1000 + 5000 : Number(speed)||2 * 1000);
+      }, Number(timev));
       if (msg.msg == "timeout") {
         document.getElementById("tmp").innerText = "相手の時間切れによりあなたの勝ち"
         clearTimeout(timer);
