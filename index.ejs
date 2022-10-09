@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="チクビンビンゲームをプレイ">
+  <meta name="format-detection" content="telephone=no,address=no,email=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="robots" content="noindex,nofollow">
+  <title>チクビンビンゲーム</title>
+  <link rel="shortcut icon" href="./icon.png">
+  <link rel="stylesheet" href="./css/style1.css">
+  <script src="./js/jquery.min.js"></script>
+  <script src="./js/particleground.min.js"></script>
+  <script src="./js/particles.js"></script>
+</head>
+
+<body>
+  <div id="particles"></div>
+  <div id="app">
+    <div class="font">
+      <h3>
+        <div id="tmp">
+          <h2><span id="result" class="badge bg-primary"></span></h2>
+          <div id="content">
+            <%- content %>
+          </div>
+        </div>
+      </h3>
+    </div>
+    <div id="allbutton">
+      <table id="t1">
+        <tr>
+          <td><input type="button" value="ちくびんびん" onclick="Click('チクビ'); " disabled class="qizbt" /><br /></td>
+          <td><input type="button" value="にきびんびん" onclick="Click('ニキビ'); " disabled class="qizbt" /><br /></td>
+          <td><input type="button" value="びきにんにん" onclick="Click('ビキニ'); " disabled class="qizbt" /><br /></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <input type="button" value="もどるんるん" onclick="back();" />
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script language="javascript" type="text/javascript">
+    const sp = (location.search?.slice(8)) ? 1 : window.prompt("速度をを入力してください(毎秒)", "");
+    let speed = (!isNaN(sp)) ? Number(sp) : 1;
+    const quiz_list = ["ニキビ", "チクビ", "ビキニ"]
+    const roomid = location.search?.slice(8) || document.cookie?.slice(7)
+    let tmp = quiz_list[Math.floor(Math.random() * 3)];
+    let timer;
+    const inputItem = document.getElementById("allbutton").getElementsByTagName("input");
+    const desabled = bool => { for (let i = 0; i < inputItem.length; i++) inputItem[i].disabled = bool; };
+    const shuffleTable = _ => {
+      const n1 = document.getElementById("t1").getElementsByTagName("td");
+      const n2 = new Array();
+      for (let i = 0; i < n1.length; i++) {
+        n2.push(n1[i].cloneNode(true));
+      };
+      for (let i = n2.length - 1; i > 1; i--) {
+        const j = parseInt(Math.random() * (i + 1));
+        const k = n2[i]; n2[i] = n2[j]; n2[j] = k;
+      }
+      for (let i = n1.length - 1; i >= 0; i--) {
+        const p = n1[i].parentNode;
+        p.insertBefore(n2[i], n1[i]);
+        p.removeChild(n1[i + 1]);
+      };
+    }
+    const socket = io();
+    function back() {
+      clearTimeout(timer);
+      document.location.href = "/";
+      socket.emit('chat message', { msg: "back", id: roomid });
+    }
+    function Click(select) {
+      desabled(true);
+      const q = quiz_list[Math.floor(Math.random() * 3)];
+      if (tmp !== select) {
+        document.getElementById("tmp").innerText = "押し間違い負け";
+        socket.emit('chat message', { msg: "lose", id: roomid });
+      } else {
+        document.getElementById("tmp").innerText = "相手が回答中";
+        socket.emit('chat message', { msg: q, id: roomid, sp: speed });
+      }
+      clearTimeout(timer);
+    };
+    socket.on('chat message', msg => {
+      clearTimeout(timer);
+      if (msg.msg == "connect") {
+        document.getElementById("content").innerText = "";
+        const result = document.getElementById('result');
+        for (let i = 0; i < 6; i++) {
+          setTimeout(() => {
+            if (5 - i == 0) result.textContent = "開始";
+            result.textContent = (5 - i);
+            if (i == 5) {
+              document.getElementById("tmp").innerText = tmp;
+              desabled(false);
+            };
+          }, i * 1000);
+        };
+      } else {
+        shuffleTable();
+        document.getElementById("tmp").innerText = msg.msg;
+        speed = msg.sp
+        tmp = msg.msg;
+        desabled(false);
+      };
+      timer = setTimeout(_ => {
+        desabled(true);
+        socket.emit('chat message', { msg: "timeout", id: roomid });
+        document.getElementById("tmp").innerText = "時間切れ負け";
+      }, (msg.msg == "connect") ? Number(speed)||2 * 1000 + 5000 : Number(speed)||2 * 1000);
+      if (msg.msg == "timeout") {
+        document.getElementById("tmp").innerText = "相手の時間切れによりあなたの勝ち"
+        clearTimeout(timer);
+        desabled(true);
+      }
+      if (msg.msg == "lose") {
+        document.getElementById("tmp").innerText = "相手の押し間違いによりあなたの勝ち"
+        clearTimeout(timer);
+        desabled(true);
+      }
+    });
+  </script>
+</body>
+
+</html>

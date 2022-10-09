@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="roomidを入力してゲームを開始">
+  <meta name="format-detection" content="telephone=no,address=no,email=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="robots" content="noindex,nofollow">
+  <title>roomID入力</title>
+  <link rel="shortcut icon" href="./icon.png">
+  <link rel="stylesheet" href="./css/style1.css">
+  <script src="./js/jquery.min.js"></script>
+  <script src="./js/particleground.min.js"></script>
+  <script src="./js/particles.js"></script>
+</head>
+
+<body>
+  <input type="button" value="もどるんるん" onclick="back();" />
+  <div id="particles"></div>
+  <div id="app">
+    <form method="POST">
+      <div class="font"> RoomID：<input type="number" name="roomid" id="tentacles" placeholder=<%- content %>><br> </div>
+      <input type="submit" class="button">
+    </form>
+  </div>
+  <script language="javascript" type="text/javascript">
+    function back() { document.location.href = "/"; }
+  </script>
+</body>
+
+</html>
