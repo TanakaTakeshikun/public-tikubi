@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <link rel="shortcut icon" href="./icon.png" />
   <link rel="apple-touch-icon-precomposed" href="./icon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta property="og:title" content="最高のチクゲー爆誕" />
   <meta property="og:type" content="website" />
   <meta property="og:description" content="チクビゲー略してチクゲーそのチクゲーをオンラインで友達とプレイしよう!" />
@@ -45,7 +46,6 @@
     </div>
   </div>
   <input type="button" value="もどるんるん" onclick="back();" />
-
   <script src="/socket.io/socket.io.js"></script>
   <script language="javascript" type="text/javascript">
     const sp = (location.search?.slice(8)) ? 1 : window.prompt("速度を入力してください(毎秒)", "");
@@ -117,7 +117,7 @@
         desabled(true);
         socket.emit('chat message', { msg: "timeout", id: roomid });
         document.getElementById("tmp").innerText = "時間切れ負け";
-      }, Number(timev));
+      }, (Number(timev)<0)?Number(timev)*-1:Number(timev));
       if (msg.msg == "timeout") {
         document.getElementById("tmp").innerText = "相手の時間切れによりあなたの勝ち"
         clearTimeout(timer);

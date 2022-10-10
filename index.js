@@ -7,14 +7,15 @@ const { Server } = require('socket.io');
 const io = new Server(http);
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const randRange = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
 let room = new Set();
 let tmp = new Set();
-const randRange = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.static("./publicfile"));
-app.set('view engine', 'ejs')
+app.set('view engine', 'ejs');
+http.listen(PORT);
 app.get("/", (_, res) => {
   res.sendFile(__dirname + "/main.html")
 })
@@ -31,7 +32,6 @@ app.get('/roomcreate', (_, res) => {
   room.add(String(rand));
   res.redirect(`/wait`);
 });
-http.listen(PORT);
 app.get("/wait", async (req, res) => {
   const roomid = req.query?.roomid || req.cookies?.roomid;
   if (!room.has(roomid)) return res.render(__dirname + "/err.ejs", { content: "ルームIDが一致しません<br>すでに開始されている可能性があります" });
