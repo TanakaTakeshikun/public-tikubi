@@ -45,19 +45,17 @@
       </table>
     </div>
   </div>
-  <div id = "back">
-    <input type="button" value="もどるんるん" onclick="back();" disabled/>
-  </div>
-  <script src="/socket.io/socket.io.js"></script>
+  <input type="button" value="もどるんるん" onclick="back();" />
+  <input type="button" value="もう一度プレイ" onclick="lod();" />
   <script language="javascript" type="text/javascript">
-    const sp = (location.search?.slice(8)) ? 2 : window.prompt("速度を入力してください(毎秒)", "");
+    const sp = window.prompt("速度を入力してください(毎秒)", "") || 2;
+    console.log(sp)
     let speed = (!isNaN(sp)) ? Number(sp) : 2;
-    const quiz_list = ["ニキビ", "チクビ", "ビキニ"]
-    const roomid = location.search?.slice(8) || document.cookie?.slice(7)
+    const quiz_list = ["ニキビ", "チクビ", "ビキニ"];
     let tmp = quiz_list[Math.floor(Math.random() * 3)];
     let timer;
+    let first;
     const inputItem = document.getElementById("allbutton").getElementsByTagName("input");
-    const back_desabled = bool => document.getElementById("back").getElementsByTagName("input")[0].disabled=false;
     const desabled = bool => { for (let i = 0; i < inputItem.length; i++) inputItem[i].disabled = bool; };
     const shuffleTable = _ => {
       const n1 = document.getElementById("t1").getElementsByTagName("td");
@@ -74,70 +72,54 @@
         p.insertBefore(n2[i], n1[i]);
         p.removeChild(n1[i + 1]);
       };
-    }
-    const socket = io();
+    };
+    document.getElementById("content").innerText = "";
+    const result = document.getElementById('result');
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => {
+        result.textContent = (5 - i);
+        if (i == 5) {
+          document.getElementById("tmp").innerText = tmp;
+          desabled(false);
+        };
+      }, i * 1000);
+    };
+    timer = setTimeout(_ => {
+      desabled(true);
+      document.getElementById("tmp").innerText = "時間切れ負け";
+    }, Number(speed) * 1000 + 5000);
     function back() {
       clearTimeout(timer);
       document.location.href = "/";
-      socket.emit('chat message', { msg: "back", id: roomid });
     }
     function Click(select) {
       desabled(true);
       const q = quiz_list[Math.floor(Math.random() * 3)];
       if (tmp !== select) {
         document.getElementById("tmp").innerText = "押し間違い負け";
-        socket.emit('chat message', { msg: "lose", id: roomid });
-        back_desabled();
       } else {
+        first = true;
         document.getElementById("tmp").innerText = "相手が回答中";
-        socket.emit('chat message', { msg: q, id: roomid, sp: speed });
+        shuffleTable();
+        tmp = quiz_list[Math.floor(Math.random() * 3)];
+        setTimeout(() => {
+          document.getElementById("tmp").innerText = tmp;
+          desabled(false);
+          shuffleTable();
+          timer = setTimeout(_ => {
+            desabled(true);
+            document.getElementById("tmp").innerText = "時間切れ負け";
+          }, Number(speed) * 1000);
+        }, Math.floor(Math.random() * speed) * 1000);
       }
       clearTimeout(timer);
     };
-    socket.on('chat message', msg => {
-      if (msg.msg == "connect") {
-        document.getElementById("content").innerText = "";
-        const result = document.getElementById('result');
-        for (let i = 0; i < 6; i++) {
-          setTimeout(() => {
-            if (5 - i == 0) result.textContent = "開始";
-            result.textContent = (5 - i);
-            if (i == 5) {
-              document.getElementById("tmp").innerText = tmp;
-              desabled(false);
-            };
-          }, i * 1000);
-        };
-      } else {
-        shuffleTable();
-        document.getElementById("tmp").innerText = msg.msg;
-        speed = msg.sp
-        tmp = msg.msg;
-        desabled(false);
-      };
+    function lod() {
       clearTimeout(timer);
-      const timev =(msg.msg == "connect") ?  (Number(speed)||2) * 1000 + 5000 : (Number(speed)||2) * 1000
-      timer = setTimeout(_ => {
-        desabled(true);
-        socket.emit('chat message', { msg: "timeout", id: roomid });
-        document.getElementById("tmp").innerText = "時間切れ負け";
-        back_desabled();
-      }, (Number(timev)<0)?Number(timev)*-1:Number(timev));
-      if (msg.msg == "timeout") {
-        document.getElementById("tmp").innerText = "相手の時間切れによりあなたの勝ち"
-        clearTimeout(timer);
-        desabled(true);
-        back_desabled();
-      }
-      if (msg.msg == "lose") {
-        document.getElementById("tmp").innerText = "相手の押し間違いによりあなたの勝ち"
-        clearTimeout(timer);
-        desabled(true);
-        back_desabled();
-      }
-    });
+      document.location.href = "/solo";
+    }
   </script>
-  
 </body>
+
 
 </html>

@@ -19,6 +19,9 @@ http.listen(PORT);
 app.get("/", (_, res) => {
   res.sendFile(__dirname + "/main.html")
 })
+app.get("/solo", async (_, res) => {
+  res.sendFile(__dirname + "/solo.html")
+});
 app.get('/game', (_, res) => {
   res.render(__dirname + '/join.ejs', { content: "ルームIDを入力" });
 });
@@ -41,6 +44,7 @@ app.get("/wait", async (req, res) => {
   res.render(__dirname + "/index.ejs", { content: (req.query?.roomid) ? "相手が回答中" : `貴方のルームID:${roomid}<br>プレイヤーが接続するまでお待ちください` });
 });
 
+
 io.on('connection', socket => {
   if(![...socket.rooms.values()][1]){
     socket.join([...tmp.values()][0]);
@@ -53,7 +57,7 @@ io.on('connection', socket => {
   });
   socket.to(rooms[1]).emit('chat message', {msg:"connect"});
   socket.on('chat message', msg => {
-    if (msg == "back") return io.in(msg.id).socketsLeave(msg.id);
+    if (msg.msg == "back") return io.in(msg.id).socketsLeave(msg.id);
     socket.to(msg.id).emit('chat message', {msg:msg.msg,sp:msg.sp});
   });
 });
